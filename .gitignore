@@ -4,7 +4,7 @@ node_modules/
 *.db
 *.db-shm
 *.db-wal
-client_wal_index
+*_wal_index
 
 *.env*
 
