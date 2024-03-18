@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "postinstall": "cp ./node_modules/htmx.org/dist/htmx.min.js ./assets/htmx.min.js && cp ./node_modules/htmx-ext-json-enc/json-enc.js ./assets/json-enc.js"
+  },
+  "dependencies": {
+    "htmx-ext-json-enc": "^2.0.0",
+    "htmx.org": "^1.9.10"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

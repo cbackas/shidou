@@ -1,0 +1,33 @@
+version: '3'
+tasks:
+  default:
+    cmds:
+      - task: dev
+  tailwind-generate:
+    cmds:
+      - npx tailwindcss -i ./styles/tailwind.css -o ./assets/main.css
+  tailwind-watch:
+    cmds:
+      - npx tailwindcss -i ./styles/tailwind.css -o ./assets/main.css --watch
+  build:
+    cmds:
+      - cargo build
+  run:
+    cmds:
+      - task: tailwind-generate
+      - cargo run
+  dev:
+    aliases: [watch]
+    cmds:
+      - task tailwind-watch & cargo watch -s 'cargo run'
+    env:
+      RUST_BACKTRACE: 1
+  # deploy:
+  #   cmds:
+  #     - flyctl deploy
+  # stop-app:
+  #   cmds:
+  #     - flyctl scale count 0 -a troyonthetrails
+  # start-app:
+  #   cmds:
+  #     - flyctl scale count 1 -a troyonthetrai

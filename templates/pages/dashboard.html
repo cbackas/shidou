@@ -1,0 +1,155 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Shidou{% endblock %}
+
+{% block head %}
+<script>
+    function isValidUrl(input) {
+        input = input.trim();
+        input = input.includes('://') ? input : 'http://' + input;
+        var re_weburl = new RegExp(
+          "^" +
+            // protocol identifier (optional)
+            // short syntax // still required
+            "(?:(?:(?:https?|ftp):)?\\/\\/)" +
+            // user:pass BasicAuth (optional)
+            "(?:\\S+(?::\\S*)?@)?" +
+            "(?:" +
+              // IP address exclusion
+              // private & local networks
+              "(?!(?:10|127)(?:\\.\\d{1,3}){3})" +
+              "(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})" +
+              "(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})" +
+              // IP address dotted notation octets
+              // excludes loopback network 0.0.0.0
+              // excludes reserved space >= 224.0.0.0
+              // excludes network & broadcast addresses
+              // (first & last IP address of each class)
+              "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
+              "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
+              "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
+            "|" +
+              // host & domain names, may end with dot
+              // can be replaced by a shortest alternative
+              // (?![-_])(?:[-\\w\\u00a1-\\uffff]{0,63}[^-_]\\.)+
+              "(?:" +
+                "(?:" +
+                  "[a-z0-9\\u00a1-\\uffff]" +
+                  "[a-z0-9\\u00a1-\\uffff_-]{0,62}" +
+                ")?" +
+                "[a-z0-9\\u00a1-\\uffff]\\." +
+              ")+" +
+              // TLD identifier name, may end with dot
+              "(?:[a-z\\u00a1-\\uffff]{2,}\\.?)" +
+            ")" +
+            // port number (optional)
+            "(?::\\d{2,5})?" +
+            // resource path (optional)
+            "(?:[/?#]\\S*)?" +
+          "$", "i"
+        );
+        return !!re_weburl.test(input);
+    }
+
+    function validateURLInput() {
+        const isValid = isValidUrl(this.value);
+        if (isValid === false) {
+            this.setCustomValidity('Please provide a valid URL');
+            htmx.find('#createRedirectForm').reportValidity();
+        } else {
+            this.setCustomValidity('');
+        }
+    }
+
+    function copyRedirectKeyToClipboard(element, event) {
+        if (event.detail.pathInfo.requestPath !== '/api/redirect') {
+            return;
+        }
+
+        try {
+            const text = element.querySelector("#redirectKeyInput").value;
+            navigator.clipboard.writeText(text);
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+    }
+</script>
+{% endblock %}
+
+{% block header %}
+    <header class="flex w-full justify-between p-4">
+        <div class="text-center">
+            <a href="/" class="text-5xl honk-400 drop-shadow-lg">Shidou</a>
+            <p class="text-black dark:text-white text-sm w-full">Shorten your links</p>
+        </div>
+        <button
+        class="flex items-center max-h-12 max-w-22 bg-white border border-gray-300 rounded-lg shadow-md px-6 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            onclick="location.href='/auth/logout'"
+            >
+            <svg class="h-6 w-6 mr-2 drop-shadow-xl"
+                 xmlns="http://www.w3.org/2000/svg"
+                 xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="0 -28.5 256 256"
+                 version="1.1"
+                 preserveAspectRatio="xMidYMid">
+                <g>
+                <path d="M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,67.146514 -3.4433191,116.400813 1.08711069,164.955721 C23.2560196,181.510915 44.7403634,191.567697 65.8621325,198.148576 C71.0772151,190.971126 75.7283628,183.341335 79.7352139,175.300261 C72.104019,172.400575 64.7949724,168.822202 57.8887866,164.667963 C59.7209612,163.310589 61.5131304,161.891452 63.2445898,160.431257 C105.36741,180.133187 151.134928,180.133187 192.754523,160.431257 C194.506336,161.891452 196.298154,163.310589 198.110326,164.667963 C191.183787,168.842556 183.854737,172.420929 176.223542,175.320965 C180.230393,183.341335 184.861538,190.991831 190.096624,198.16893 C211.238746,191.588051 232.743023,181.531619 254.911949,164.955721 C260.227747,108.668201 245.831087,59.8662432 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z" fill="#5865F2" fill-rule="nonzero">
+                </path>
+                </g>
+            </svg>
+            <span>Logout</span>
+        </button>
+    </header>
+{% endblock %}
+
+{% block content %}
+    <div class="flex-1 flex items-center justify-center p-6">
+        <form id="createRedirectForm"
+              hx-post="/api/redirect"
+        	  hx-on::after-request="copyRedirectKeyToClipboard(this, event)"
+              hx-ext='json-enc'
+              class="w-full max-w-4xl px-2 py-2 text-center items-center space-y-2 text-black bg-slate-200 rounded">
+            <div class="flex w-full">
+                <div class="flex items-center max-w-8 pe-2 pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke-width="1.5"
+                         stroke="currentColor"
+                         class="w-6 h-6 text-gray-950">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                    </svg>
+                </div>
+                <input type="text"
+                    name="url"
+                    placeholder="Paste a long URL"
+                    required
+                	value="text.com"
+                    onkeyup="this.setCustomValidity('')" hx-on:htmx:validation:validate="validateURLInput.bind(this)()"
+                    class="bg-transparent border-b-2 border-gray-500 flex-grow px-2 w-full">
+                <input type="submit"
+                       class="bg-blue-500 text-white text-sm font-semibold rounded-lg px-4 py-2.5 ml-2"
+                       value="Shorten">
+            </div>
+            <div class="flex justify-between">
+                <div class="flex items-center pl-10">
+                    <div class="flex items-center pointer-events-none">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-950">
+                            <path d="M4 4V6.4C4 9.76032 4 11.4405 4.65396 12.7239C5.2292 13.8529 6.14708 14.7708 7.27606 15.346C8.55953 16 10.2397 16 13.6 16H20M20 16L16 12M20 16L16 20" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p class="text-stone-600">{{ host }}</p>
+                    <div id="redirectUrlWrapper"
+                        class="mx-auto"
+                    >
+                    </div>
+                </div>
+                <button hx-target="#redirectUrlWrapper"
+                		hx-trigger="load, click"
+                        hx-swap="innerHTML"
+                        hx-get="/ui/redirect_url_input"
+                        class="px-2">Randomize</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

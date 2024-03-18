@@ -1,0 +1,30 @@
+[package]
+name = "shidou"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.80"
+axum = "0.7.4"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.114"
+tokio = { version = "1.36.0", features = ["full"] }
+tower = "0.4.13"
+tower-http = { version = "0.5.2", features = ["fs", "compression-gzip", "trace", "auth"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+libsql = { git = "https://github.com/tursodatabase/libsql", tag = "libsql-rs-v0.3.1" }
+askama = { version = "0.12.1", features = ["with-axum"] }
+askama_axum = "0.4.0"
+futures-util = "0.3.30"
+axum-macros = "0.4.1"
+chrono = { version = "0.4.35", features = ["serde"] }
+rand = "0.8.5"
+cookie = "0.18.0"
+http-body-util = "0.1.1"
+bytes = "1.5.0"
+axum-extra = { version = "0.9.2", features = ["cookie-private"] }
+reqwest = { version = "0.11.26", features = ["json"] }
+jsonwebtoken = { version = "9.2.0", features = ["use_pem"] }
+dotenvy = "0.15.7"
+

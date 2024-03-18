@@ -1,0 +1,32 @@
+<script>
+    function resizeInput() {
+        const input = document.getElementById('redirectKeyInput');
+        const fontSize = parseInt(window.getComputedStyle(input, null).getPropertyValue('font-size').replace('px', ''));
+
+        const min = 112;
+        const max = 400;
+
+        const newVal = input.value.length * (fontSize / 2) + 60;
+        if (newVal > min && newVal < max) {
+            input.style.width = `${newVal}px`;
+        } else if (newVal >= max) {
+            input.style.width = `${max}px`;
+        } else if (newVal <= min) {
+            input.style.width = `${min}px`;
+        }
+    }
+
+    function validateInput(element) {
+        // if (this.value != 'foo') {
+        //     this.setCustomValidity('Please enter the value foo');
+        //     htmx.find('#createRedirectForm').reportValidity();
+        // } else {
+        //     this.setCustomValidity('');
+        // }
+    }
+</script>
+
+<input type="text" id="redirectKeyInput"
+    class="bg-transparent border-none focus:border-non px-2 py-1 w-28 min-w-28 text-clip overflow-hidden font-mono"
+    name="key" maxlength="26" value="{{ shortened_url }}" oninput="resizeInput()" required
+    onkeyup="this.setCustomValidity('')" hx-on:htmx:validation:validate="validateInput.bind(this)()">
