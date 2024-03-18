@@ -3,13 +3,13 @@ use askama_axum::IntoResponse;
 use axum::{
     extract::Query,
     http::{header::CACHE_CONTROL, HeaderMap, HeaderValue, StatusCode},
-    response::{IntoResponseParts, Redirect},
+    response::Redirect,
     Json,
 };
 use axum_extra::extract::PrivateCookieJar;
 use cookie::Cookie;
 use serde_json::json;
-use tracing::{error, trace};
+use tracing::error;
 
 use crate::{
     middleware::auth::build_expired_cookie,
@@ -28,8 +28,8 @@ fn redirect_with_cache_control(url: &str) -> impl IntoResponse {
 
 pub async fn get_login_redirect(headers: HeaderMap) -> impl IntoResponse {
     let discord_config = env::get_discord_config();
-    let host = strings::get_host_header(&headers);
-    let redirect_uri = format!("{}auth/callback", host);
+    let host = strings::get_host_header(&headers, true);
+    let redirect_uri = format!("{}/auth/callback", host);
     let redirect_uri = urlencode(redirect_uri).expect("failed to urlencode redirect_uri");
     let scopes = ["identify", "guilds"];
 
@@ -93,8 +93,8 @@ pub async fn callback(headers: HeaderMap, Query(query): Query<CallbackQuery>) ->
     let code = query.code.expect("code not found");
 
     let discord_config = env::get_discord_config();
-    let host = strings::get_host_header(&headers);
-    let redirect_uri = format!("{}auth/callback", host);
+    let host = strings::get_host_header(&headers, true);
+    let redirect_uri = format!("{}/auth/callback", host);
 
     let client = reqwest::Client::new();
 

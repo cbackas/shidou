@@ -19,14 +19,17 @@ pub fn generate_random_string(length: usize) -> String {
     rand_string
 }
 
-pub fn get_host_header(headers: &HeaderMap) -> String {
-    match headers
+pub fn get_host_header(headers: &HeaderMap, add_proto: bool) -> String {
+    let string = headers
         .get("host")
         .expect("host header not found")
         .to_str()
-        .expect("host header couldn't be converted to string")
-    {
-        "localhost:8080" => "http://localhost:8080/".to_string(),
-        h => format!("https://{}/", h),
+        .expect("host header couldn't be converted to string");
+
+    match add_proto {
+        false => string.to_string(),
+        true if string.contains("localhost") => "http://localhost:8080".to_string(),
+        true if string.starts_with("http") => string.to_string(),
+        true => format!("https://{}", string),
     }
 }

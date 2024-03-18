@@ -15,15 +15,20 @@ use crate::utils::{env, jwt::JWT};
 #[derive(Debug, Clone)]
 pub struct UserId(String);
 
+impl UserId {
+    pub fn into_i64(self) -> i64 {
+        self.0.parse().unwrap()
+    }
+}
+
 pub async fn auth_cookie_middleware(
     headers: HeaderMap,
-    req: Request,
+    mut req: Request,
     next: Next,
 ) -> Result<Response, StatusCode> {
     if let Some(user_id) = check_auth(&headers).await {
-        let mut res = next.run(req).await;
-        res.extensions_mut().insert(user_id);
-        Ok(res)
+        req.extensions_mut().insert(user_id);
+        Ok(next.run(req).await)
     } else {
         Err(StatusCode::UNAUTHORIZED)
     }

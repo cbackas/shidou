@@ -45,9 +45,11 @@ pub async fn init_tables() -> anyhow::Result<()> {
     let tx = conn
         .transaction_with_behavior(libsql::TransactionBehavior::Immediate)
         .await?;
+
     // tx.execute("DROP TABLE IF EXISTS users", libsql::params!())
-    //     .await
-    //     .context("Failed to drop redirects table")?;
+    //     .await?;
+    // tx.execute("DROP TABLE IF EXISTS redirects", libsql::params!())
+    //     .await?;
 
     //
     // Redirects table
@@ -57,9 +59,12 @@ pub async fn init_tables() -> anyhow::Result<()> {
                 id INTEGER PRIMARY KEY,
                 key TEXT UNIQUE,
                 url TEXT,
+		redirect_host TEXT,
 	    	visits INTEGER DEFAULT 0,
+		created_by INTEGER,
                 created_utc REAL DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now')),
-                updated_utc REAL DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now'))
+                updated_utc REAL DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now')),
+		FOREIGN KEY(created_by) REFERENCES users(id)
             )",
         libsql::params!(),
     )

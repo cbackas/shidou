@@ -9,29 +9,38 @@ pub struct RedirectRow {
     id: i64,
     pub key: String,
     pub url: String,
+    pub redirect_host: String,
     pub visits: u64,
+    pub created_by: i64,
     #[serde(with = "custom_date_format")]
     pub created_utc: DateTime<Utc>,
     #[serde(with = "custom_date_format")]
     pub updated_utc: DateTime<Utc>,
 }
 
-pub async fn save_new_redirect(key: &str, url: &str) -> anyhow::Result<()> {
+pub async fn save_new_redirect(
+    key: &str,
+    url: &str,
+    host: &str,
+    created_by: i64,
+) -> anyhow::Result<RedirectRow> {
     let conn = get_conn().await;
 
     let result = conn
         .execute(
-            "insert into redirects (key, url) values (:key, :url)",
+            "insert into redirects (key, url, redirect_host, created_by) values (:key, :url, :redirect_host, :created_by)",
             named_params!(
                 ":key": key,
                 ":url": url,
+                ":redirect_host": host,
+                ":created_by": created_by
             ),
         )
         .await
-        .context("Failed to insert new redirect into database")?;
+        ?;
 
     match result {
-        1 => Ok(()),
+        1 => Ok(get_redirect(key, host).await?),
         val => Err(anyhow::anyhow!(
             "Expected 1 row to be inserted, but got {}",
             val
@@ -39,7 +48,7 @@ pub async fn save_new_redirect(key: &str, url: &str) -> anyhow::Result<()> {
     }
 }
 
-pub async fn update_redirect(key: &str, url: &str) -> anyhow::Result<()> {
+pub async fn update_redirect(key: &str, url: &str, host: &str) -> anyhow::Result<RedirectRow> {
     let conn = get_conn().await;
 
     let result = conn
@@ -54,19 +63,20 @@ pub async fn update_redirect(key: &str, url: &str) -> anyhow::Result<()> {
         .context("Failed to update redirect in database")?;
 
     match result {
-        1 => Ok(()),
+        1 => Ok(get_redirect(key, host).await?),
         _ => Err(anyhow::anyhow!("Failed to update redirect in database")),
     }
 }
 
-pub async fn delete_redirect(key: &str) -> anyhow::Result<()> {
+pub async fn delete_redirect(key: &str, host: &str) -> anyhow::Result<()> {
     let conn = get_conn().await;
 
     let result = conn
         .execute(
-            "delete from redirects where key = :key",
+            "DELETE FROM redirects WHERE key = :key AND host = :host",
             named_params!(
                 ":key": key,
+                ":host": host,
             ),
         )
         .await
@@ -75,6 +85,30 @@ pub async fn delete_redirect(key: &str) -> anyhow::Result<()> {
     match result {
         1 => Ok(()),
         _ => Err(anyhow::anyhow!("Failed to delete redirect from database")),
+    }
+}
+
+pub async fn get_redirect(key: &str, host: &str) -> anyhow::Result<RedirectRow> {
+    let conn = get_conn().await;
+
+    let mut result = conn
+        .query(
+            "SELECT * FROM redirects WHERE key = :key AND redirect_host = :redirect_host LIMIT 1",
+            named_params!(
+                ":key": key,
+                ":redirect_host": host,
+            ),
+        )
+        .await
+        .context("Failed to get redirect from database")?;
+
+    match result.next().await {
+        Ok(Some(row)) => {
+            let row = libsql::de::from_row::<_>(&row)?;
+            Ok(row)
+        }
+        Err(e) => return Err(anyhow::anyhow!("Failed to get redirect by key: {}", e)),
+        Ok(None) => return Err(anyhow::anyhow!("Failed to get redirect by key")),
     }
 }
 
