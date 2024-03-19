@@ -148,6 +148,16 @@ pub async fn callback(headers: HeaderMap, Query(query): Query<CallbackQuery>) ->
     }
     let user_info = user_info.unwrap();
 
+    if !discord_config.guilds.is_empty() {
+        if !user_info.has_any_guild(discord_config.guilds.as_ref()) {
+            return (
+                StatusCode::FORBIDDEN,
+                Json(json!({ "error": "You are not a member of an allowed Discord guild" })),
+            )
+                .into_response();
+        }
+    }
+
     let upserted_user = models::user::upsert_user(&user_info.id, &user_info.username).await;
     if let Err(e) = upserted_user {
         error!("Failed to upsert user: {:?}", e);
