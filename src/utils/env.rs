@@ -2,18 +2,6 @@ use std::env;
 
 use tracing::error;
 
-pub fn get_host_uri() -> String {
-    match env::var("HOST") {
-        Ok(host) => format!("https://{}", host),
-        _ => match env::var("FLY_APP_NAME") {
-            Ok(host) => format!("https://{}.fly.dev", host),
-            _ => {
-                format!("http://localhost:{}", get_port())
-            }
-        },
-    }
-}
-
 pub fn get_port() -> u16 {
     let default_port: u16 = 8080;
 

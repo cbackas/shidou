@@ -22,12 +22,12 @@ tasks:
       - task tailwind-watch & cargo watch -s 'cargo run'
     env:
       RUST_BACKTRACE: 1
-  # deploy:
-  #   cmds:
-  #     - flyctl deploy
-  # stop-app:
-  #   cmds:
-  #     - flyctl scale count 0 -a troyonthetrails
-  # start-app:
-  #   cmds:
-  #     - flyctl scale count 1 -a troyonthetrai
+  deploy:
+    cmds:
+      - flyctl deploy
+  stop-app:
+    cmds:
+      - flyctl scale count 0 -a shidou
+  start-app:
+    cmds:
+      - flyctl scale count 1 -a shidou

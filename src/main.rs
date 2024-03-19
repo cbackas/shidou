@@ -32,9 +32,6 @@ async fn main() -> anyhow::Result<()> {
 
     let port = crate::utils::env::get_port();
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
-    let host_uri = crate::utils::env::get_host_uri();
-
-    tracing::info!("Starting server at host: {}", host_uri);
 
     let listener = TcpListener::bind(&addr)
         .await
