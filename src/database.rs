@@ -64,7 +64,7 @@ pub async fn init_tables() -> anyhow::Result<()> {
 		created_by INTEGER,
                 created_utc REAL DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now')),
                 updated_utc REAL DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now')),
-		FOREIGN KEY(created_by) REFERENCES users(id)
+		FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE CASCADE
             )",
         libsql::params!(),
     )
